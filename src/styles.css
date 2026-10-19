@@ -1,0 +1,148 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Outfit:wght@300;400;500;600&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", system-ui, sans-serif;
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+
+  --color-ink: #0c0a09;
+  --color-ink-2: #14110f;
+  --color-panel: #1b1714;
+  --color-panel-2: #241f1b;
+  --color-line: #342c26;
+  --color-ivory: #f3ede6;
+  --color-mist: #a89b8c;
+  --color-brass: #c4a574;
+  --color-brass-2: #e6d3b0;
+  --color-wine: #7a3030;
+  --color-blush: #e7c1c1;
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background: var(--color-ink);
+    color: var(--color-ivory);
+    font-family: var(--font-sans);
+    text-wrap: pretty;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brass);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--color-brass);
+    color: var(--color-ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+html:not([data-adult="1"]) .house {
+  display: none;
+}
+
+html[data-adult="1"] .age-gate {
+  display: none;
+}
+
+.snap-rail {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-inline: 1rem;
+  scroll-padding-inline: 1rem;
+}
+
+.snap-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.snap-card {
+  scroll-snap-align: start;
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+@media (min-width: 40rem) {
+  .snap-rail {
+    padding-inline: 1.5rem;
+    scroll-padding-inline: 1.5rem;
+  }
+  .snap-card {
+    flex-basis: calc(50% - 0.5rem);
+  }
+}
+
+@media (min-width: 64rem) {
+  .snap-card {
+    flex-basis: calc(33.333% - 0.67rem);
+  }
+}
+
+.desk-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-panel);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (min-width: 40rem) {
+  .desk-dialog {
+    inset: auto;
+    top: 50%;
+    left: 50%;
+    width: min(34rem, calc(100vw - 2rem));
+    max-height: min(42rem, calc(100dvh - 2rem));
+    transform: translate(-50%, -50%);
+    border: 1px solid var(--color-line);
+    border-radius: 0.75rem;
+    padding-bottom: 0;
+  }
+}
+
+.stage {
+  min-height: calc(100dvh - 4rem);
+}
+.chip-rail::-webkit-scrollbar {
+  display: none;
+}

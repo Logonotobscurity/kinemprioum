@@ -1,0 +1,348 @@
+python3 << 'PYEOF'
+import json
+with open('/tmp/pieces.json') as f:
+    P = json.load(f)
+
+with open('/tmp/part1.txt') as f:
+    part1 = f.read()
+
+# Strip the inner DATA block header since we rebuild it
+product_arrays = P['product_data']
+# Remove the "// ─── DATA ───\nconst CDN..." line since we write it fresh
+product_arrays = product_arrays.replace("// ─── DATA ───\n", "")
+
+ATTRACTION = """
+const ATTRACTION = [
+  {disc:'-60%',img:'2025/01/The-Dark-Needle-%E2%80%93-The-Attraction-Algorithm-300x173.png',cat:'Attraction',title:'The Dark Needle \u2013 The Attraction Algorithm',orig:'$89.00',sale:'$36.00',sold:40},
+  {disc:'-98%',img:'2023/02/RSD-Jeffy-%E2%80%93-Charisma-Mastery-300x173.png',cat:'Attraction',title:'RSD Jeffy \u2013 Charisma Mastery',orig:'$697.00',sale:'$15.00',sold:64},
+  {disc:'-55%',img:'2022/04/Markus-Wolf-%E2%80%93-Becoming-The-Ultimate-Man-%E2%80%93-A-step-by-step-guide-to-mastering-seduction-with-any-women-300x173.png',cat:'Attraction',title:'Markus Wolf \u2013 The Ultimate Man Attraction Blueprint',orig:'$497.00',sale:'$225.00',sold:22},
+  {disc:'-40%',img:'2024/09/Joe-Lampton-%E2%80%93-Rules-Of-Breaking-Hearts-300x173.png',cat:'Attraction',title:'Joe Lampton \u2013 The Attraction Playbook',orig:'$89.00',sale:'$54.00',sold:17},
+  {disc:'-30%',img:'2026/02/Attraction-Unleashed-%E2%80%93-Mystery-Beckster-The-Essentials-300x173.webp',cat:'Attraction',title:'Attraction Unleashed \u2013 Mystery & Beckster Essentials',orig:'$175.00',sale:'$117.00',sold:null},
+  {disc:'-45%',img:'2026/02/MeetySweet-%E2%80%93-Conversation-Chemistry-%E2%80%93-For-Men-300x173.png',cat:'Attraction',title:'MeetySweet \u2013 Conversation Chemistry',orig:'$47.00',sale:'$34.00',sold:2},
+  {disc:'-20%',img:'2026/01/Gents-Growth-%E2%80%93-Bad-Boy-Texting-Guide-300x173.webp',cat:'Attraction',title:'Gents Growth \u2013 Bad Boy Texting Guide',orig:'$21.99',sale:'$18.00',sold:null},
+  {disc:'-33%',img:'2026/01/Martinet-%E2%80%93-HOOK-Her-IN-37-Words-300x173.webp',cat:'Attraction',title:'Martinet \u2013 HOOK Her IN 37 Words',orig:'$14.99',sale:'$12.00',sold:5},
+  {disc:'-25%',img:'2026/02/Prime-Oathh-%E2%80%93-How-Men-Win-Dating-The-No-Bullshit-System-300x173.webp',cat:'Attraction',title:'Prime Oathh \u2013 How Men Win Dating',orig:'$46.99',sale:'$38.00',sold:2},
+  {disc:'-18%',img:'2022/08/Andrew-Mioch-Best-She-Ever-Had-2.0-300x173.png',cat:'Attraction',title:'Andrew Mioch \u2013 Best She Ever Had 2.0',orig:'$397.00',sale:'$9.00',sold:75},
+];
+"""
+
+DATE_ARR = """
+const DATE = [
+  {disc:'-91%',img:'2024/09/Joe-Lampton-%E2%80%93-Rules-Of-Breaking-Hearts-300x173.png',cat:'Date',title:'Joe Lampton \u2013 Rules Of Breaking Hearts',orig:'$99.00',sale:'$9.00',sold:49},
+  {disc:'-30%',img:'2026/02/Chelsko-%E2%80%93-Real-Women-Like-It-Hard-Audio-Version-300x173.webp',cat:'Date',title:'Chelsko \u2013 Real Women Like It Hard',orig:'$19.99',sale:'$14.00',sold:null},
+  {disc:'-40%',img:'2026/02/Jacob-Abdo-%E2%80%93-I-Dated-The-Crazy-Ones-So-You-Dont-Have-To-300x173.webp',cat:'Date',title:"Jacob Abdo \u2013 I Dated The Crazy Ones So You Don't Have To",orig:'$14.99',sale:'$9.00',sold:null},
+  {disc:'-20%',img:'2026/02/Mindfully-Dating-%E2%80%93-Trust-Your-Gut-Dating-With-Confidence-300x173.webp',cat:'Date',title:'Mindfully Dating \u2013 Trust Your Gut',orig:'$49.00',sale:'$39.00',sold:null},
+  {disc:'-20%',img:'2026/02/Ceri-Wheeldon-And-Olga-Levancuka-%E2%80%93-Dating-With-Confidence-Over-50-300x173.webp',cat:'Date',title:'Dating With Confidence Over 50',orig:'$267.00',sale:'$214.00',sold:null},
+  {disc:'-55%',img:'2026/02/The-Real-Game-%E2%80%93-Night-Game-Mastery-300x173.webp',cat:'Date',title:'The Real Game \u2013 Night Game Mastery',orig:'$197.00',sale:'$89.00',sold:null},
+  {disc:'-18%',img:'2026/02/Lance-Robbins-%E2%80%93-The-Dark-Side-Of-Modern-Desire-Bundle-Online-Dating-OnlyFans-Exposed-300x173.webp',cat:'Date',title:'Lance Robbins \u2013 Dark Side Of Modern Desire Bundle',orig:'$26.99',sale:'$22.00',sold:null},
+  {disc:'-10%',img:'2026/02/Julian-%E2%80%93-Julian-Does-It-Talk-To-Any-Woman-300x173.webp',cat:'Date',title:'Julian \u2013 Talk To Any Woman',orig:'$9.99',sale:'$9.00',sold:4},
+  {disc:'-24%',img:'2026/02/Ruwan-Meepagala-%E2%80%93-Anabolic-Psyche-300x173.webp',cat:'Date',title:'Ruwan Meepagala \u2013 Anabolic Psyche',orig:'$17.00',sale:'$13.00',sold:2,oos:true},
+  {disc:'-49%',img:'2024/12/The-47-Laws-of-Instagram-300x173.png',cat:'Date',title:'Joe Lampton \u2013 The 47 Laws of Instagram',orig:'$97.00',sale:'$49.00',sold:23},
+];
+"""
+
+# Build the carousel + footer + JS block
+carousel_footer = """<!-- DUNGEONS CAROUSEL -->
+<div class="dungeon-section">
+  <div class="dungeon-inner">
+    <div class="dungeon-head">
+      <div>
+        <div class="dungeon-title">
+          <div class="dungeon-title-icon">\u26d3</div>
+          Dungeon Sessions
+        </div>
+        <div class="dungeon-sub">Live &amp; virtual encounters \u00b7 Enquiry only \u00b7 Limited slots</div>
+      </div>
+      <div class="dungeon-nav-btns">
+        <button class="dungeon-nav-btn" id="dungPrev">&#8592;</button>
+        <button class="dungeon-nav-btn" id="dungNext">&#8594;</button>
+      </div>
+    </div>
+    <div class="dungeon-track-wrap">
+      <div class="dungeon-track" id="dungTrack"></div>
+    </div>
+    <div class="dungeon-dots" id="dungDots"></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-brand-name">KINEMP<span>R</span>IOUM</div>
+      <div class="footer-tagline">The Inner Sanctum \u00b7 Dungeon Experiences</div>
+    </div>
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Navigate</h4>
+        <ul>
+          <li><a href="#">Home</a></li>
+          <li><a href="#">About the Founder</a></li>
+          <li><a href="#">Dungeon Sessions</a></li>
+          <li><a href="#">VIP Access</a></li>
+          <li><a href="#">Request an Experience</a></li>
+          <li><a href="#">Resources</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Experiences</h4>
+        <ul>
+          <li><a href="#">The Hunt</a></li>
+          <li><a href="#">Seduction Arts</a></li>
+          <li><a href="#">Dark Magnetism</a></li>
+          <li><a href="#">The Ritual</a></li>
+          <li><a href="#">Devotion</a></li>
+          <li><a href="#">Sacred Rites</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Policies</h4>
+        <ul>
+          <li><a href="#">Delivery Policy</a></li>
+          <li><a href="#">Refund Policy</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Consent &amp; Safety</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="mailto:enquiries@kinemprioum.com">enquiries@kinemprioum.com</a></li>
+          <li><a href="#">08:00 \u2013 20:00 WAT</a></li>
+          <li><a href="#" onclick="openBookingForm('General Enquiry');return false;">Book via Form</a></li>
+          <li><a href="#">WhatsApp Line</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">\u00a9 2026 Kinemprioum \u00b7 All Rights Reserved</div>
+      <div class="footer-payment">
+        <div class="fp-badge">VISA</div>
+        <div class="fp-badge">MASTERCARD</div>
+        <div class="fp-badge">PAYPAL</div>
+        <div class="fp-badge">STRIPE</div>
+      </div>
+    </div>
+  </div>
+</footer>
+"""
+
+JS_BOOKING = """
+// \u2500 BOOKING MODAL \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function openBookingForm(expName){
+  document.getElementById('modalExpName').textContent = expName || 'General Enquiry';
+  document.getElementById('bookingModal').classList.add('open');
+  document.body.style.overflow = 'clip';
+}
+function closeBookingForm(){
+  document.getElementById('bookingModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function modalOutsideClose(e){
+  if(e.target === document.getElementById('bookingModal')) closeBookingForm();
+}
+function submitEnquiry(){
+  const name  = document.getElementById('fName').value.trim();
+  const email = document.getElementById('fEmail').value.trim();
+  if(!name || !email){ showToast('\u26a0 Please enter your name and email.'); return; }
+  closeBookingForm();
+  showToast('\u2713 Enquiry received \u2014 we will contact you shortly.');
+  ['fName','fEmail','fPhone','fCategory','fMessage'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') closeBookingForm();
+});
+
+// \u2500 TOAST \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function showToast(msg){
+  const wrap = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 200); }, 3200);
+}
+
+// \u2500 SHOW MORE / LESS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function toggleSection(gridId, btn){
+  const grid = document.getElementById(gridId);
+  const collapsed = grid.classList.contains('grid-collapsed');
+  grid.classList.toggle('grid-collapsed', !collapsed);
+  btn.textContent = collapsed ? '\u2190 Show less' : 'Reveal more experiences \u2192';
+}
+
+// \u2500 BUILD PRODUCT CARD \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function buildCard(p){
+  const imgUrl   = CDN + p.img;
+  const fallback = p.tall ? PLACEHOLDERS['tall'] : (PLACEHOLDERS[p.cat] || PLACEHOLDERS['default']);
+  const catHtml  = p.cat ? `<div class="product-category">${p.cat}</div>` : '';
+  const soldHtml = p.sold != null ? `<div class="product-sold">Sold: <strong>${p.sold}</strong></div>` : '';
+  const oosHtml  = p.oos ? `<span class="out-of-stock-badge">Unavailable</span>` : '';
+  const instHtml = p.instant ? `<span class="instant-badge">Instant</span>` : '';
+  const tallCls  = p.tall ? ' tall' : '';
+  const oosCls   = p.oos ? ' oos' : '';
+  const safeTitle = (p.title || '').replace(/'/g, "\\\\'");
+  const action   = p.oos ? '' : `onclick="openBookingForm('${safeTitle}')"`;
+  const btnText  = p.oos ? 'Unavailable' : 'Enquire \u2192';
+  return `
+    <div class="product-card">
+      <a href="#">
+        <div class="product-img-wrap${tallCls}">
+          <span class="discount-badge">${p.disc}</span>
+          ${oosHtml}${instHtml}
+          <img src="${imgUrl}" alt="${p.title}" loading="lazy" onerror="this.src='${fallback}'">
+          <div class="enquire-hover">
+            <button class="enquire-hover-btn" ${action}>${btnText}</button>
+          </div>
+        </div>
+      </a>
+      <div class="product-info">
+        ${catHtml}
+        <a href="#" class="product-title">${p.title}</a>
+        <div class="product-price">
+          <span class="price-original">${p.orig}</span>
+          <span class="price-sale">${p.sale}</span>
+        </div>
+        ${soldHtml}
+        <button class="card-enquire-btn${oosCls}" ${action}>${btnText}</button>
+      </div>
+    </div>`;
+}
+
+function renderGrid(id, data){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.innerHTML = data.map(p => buildCard(p)).join('');
+  const btn = document.getElementById('btn-' + id);
+  if(btn){
+    const threshold = window.innerWidth <= 560 ? 4 : 5;
+    if(data.length <= threshold){
+      btn.style.display = 'none';
+      el.classList.remove('grid-collapsed');
+    }
+  }
+}
+"""
+
+JS_DUNGEON_BUILD = """
+function buildDungeonCard(d){
+  const svg     = dungeonSVG(d.type);
+  const soldCls = d.sold ? ' sold' : '';
+  const btnText = d.sold ? 'SOLD OUT' : 'ENQUIRE \u2192';
+  const safeN   = (d.name || '').replace(/'/g, "\\\\'");
+  return `
+    <div class="dungeon-card">
+      <div class="dungeon-card-img">
+        <span class="dungeon-card-badge ${d.badgeCls}">${d.badge}</span>
+        ${svg}
+      </div>
+      <div class="dungeon-card-info">
+        <div class="dungeon-card-tag">${d.tag}</div>
+        <div class="dungeon-card-name">${d.name}</div>
+        <div class="dungeon-card-desc">${d.desc}</div>
+        <div class="dungeon-card-meta">
+          <div class="dungeon-price"><small>${d.origPrice}</small>${d.price}</div>
+          <div class="dungeon-spots ${d.spotsLow ? 'low' : ''}">${d.spots}</div>
+        </div>
+        <button class="dungeon-book-btn${soldCls}"
+          ${d.sold ? 'disabled' : `onclick="openBookingForm('${safeN}')"`}>${btnText}</button>
+      </div>
+    </div>`;
+}
+"""
+
+JS_CAROUSEL = """
+(function initCarousel(){
+  const track = document.getElementById('dungTrack');
+  const dots  = document.getElementById('dungDots');
+  const prev  = document.getElementById('dungPrev');
+  const next  = document.getElementById('dungNext');
+  if(!track) return;
+  track.innerHTML = DUNGEONS.map(buildDungeonCard).join('');
+  const CARD_W = 296;
+  const visible  = () => Math.max(1, Math.floor(track.parentElement.offsetWidth / CARD_W));
+  const maxIdx   = () => Math.max(0, DUNGEONS.length - visible());
+  let idx = 0;
+  function buildDots(){
+    const pages = maxIdx() + 1;
+    dots.innerHTML = '';
+    for(let i=0;i<pages;i++){
+      const d = document.createElement('div');
+      d.className = 'dungeon-dot' + (i===idx?' active':'');
+      d.onclick = () => goTo(i);
+      dots.appendChild(d);
+    }
+  }
+  function goTo(i){
+    idx = Math.max(0, Math.min(i, maxIdx()));
+    track.style.transform = `translateX(-${idx * CARD_W}px)`;
+    dots.querySelectorAll('.dungeon-dot').forEach((d,j) =>
+      d.classList.toggle('active', j===idx));
+  }
+  prev.onclick = () => goTo(idx - 1);
+  next.onclick = () => goTo(idx + 1);
+  let auto = setInterval(() => goTo(idx >= maxIdx() ? 0 : idx + 1), 4800);
+  track.parentElement.addEventListener('mouseenter', () => clearInterval(auto));
+  track.parentElement.addEventListener('mouseleave', () => {
+    auto = setInterval(() => goTo(idx >= maxIdx() ? 0 : idx + 1), 4800);
+  });
+  let tx = 0;
+  track.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, {passive:true});
+  track.addEventListener('touchend', e => {
+    const dx = tx - e.changedTouches[0].clientX;
+    if(Math.abs(dx) > 40) goTo(dx > 0 ? idx+1 : idx-1);
+  }, {passive:true});
+  buildDots();
+  window.addEventListener('resize', () => { buildDots(); goTo(Math.min(idx, maxIdx())); });
+})();
+"""
+
+JS_INIT = """
+renderGrid('highlightsGrid',    HIGHLIGHTS);
+renderGrid('pickupGrid',        PICKUP);
+renderGrid('seductionGrid',     SEDUCTION);
+renderGrid('loveGrid',          LOVE);
+renderGrid('relationshipsGrid', RELATIONSHIPS);
+renderGrid('sexGrid',           SEX);
+renderGrid('attractionGrid',    ATTRACTION);
+renderGrid('dateGrid',          DATE);
+"""
+
+# Assemble everything
+full = (
+    part1 +
+    carousel_footer +
+    "<script>\n" +
+    P['placeholders'] + "\n\n" +
+    "// \u2500 CDN \u2500\n" +
+    "const CDN = 'https://datingcourse.org/wp-content/uploads/';\n\n" +
+    product_arrays +
+    ATTRACTION +
+    DATE_ARR +
+    JS_BOOKING +
+    P['dungeonSVG'] + "\n" +
+    P['dungeons_data'] + "\n" +
+    JS_DUNGEON_BUILD +
+    JS_CAROUSEL +
+    JS_INIT +
+    "\n</script>\n</body>\n</html>"
+)
+
+with open('/home/claude/kinemprioum.html','w') as f:
+    f.write(full)
+
+print(f"Total file: {len(full):,} chars | {full.count(chr(10))} lines")
+# Quick checks
+import re
+divs = full.count('<div')
+divc = full.count('</div>')
+print(f"div balance: {divs} open / {divc} close / diff={divs-divc}")
+print(f"No cart: {'cart' not in full.lower().replace('card-enquire','X')}")
+print(f"Kinemprioum present: {'KINEMPRIOUM' in full or 'Kinemprioum' in full}")
+print(f"openBookingForm calls: {full.count('openBookingForm')}")
+print(f"All grids rendered: {full.count('renderGrid')}")
+print(f"PLACEHOLDERS defined: {'const PLACEHOLDERS' in full}")
+print(f"DUNGEONS defined: {'const DUNGEONS' in full}")
+PYEOF

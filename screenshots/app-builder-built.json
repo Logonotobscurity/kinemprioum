@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8081/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Kinemprioum",
+      "hasCanvas": false,
+      "bodyTextLen": 189,
+      "bodyTextHash": "faab85c88823d636b157b6276b178a8025332c5b22b98391cc8f044f42b43048",
+      "bodyTextPrefix": "KINEMPRIOUM ADULTS ONLY You must be 18 or older. Private session",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Kinemprioum",
+      "hasCanvas": false,
+      "bodyTextLen": 189,
+      "bodyTextHash": "faab85c88823d636b157b6276b178a8025332c5b22b98391cc8f044f42b43048",
+      "bodyTextPrefix": "KINEMPRIOUM ADULTS ONLY You must be 18 or older. Private session",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-built.json"
+}
