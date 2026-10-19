@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { OFFERINGS, SHELVES, offeringFomo, shelfLabel, slotsLeft, type Offering, type ShelfId } from "@/data/catalog";
+import { OFFERINGS, SHELVES, frameFor, offeringFomo, shelfLabel, slotsLeft, type Offering, type ShelfId } from "@/data/catalog";
 import { offLabel, useHouse } from "@/lib/house";
 import { cn } from "@/lib/cn";
 
@@ -81,6 +81,7 @@ function OfferingCard({ item }: { item: Offering }) {
           height={853}
           loading="lazy"
           className="h-full w-full object-cover"
+          style={{ objectPosition: frameFor(item.image) }}
         />
         <span className="absolute top-3 left-3 rounded-sm bg-wine px-2 py-1 text-xs font-medium text-ivory tabular-nums">
           {offLabel(item.original, item.price)}

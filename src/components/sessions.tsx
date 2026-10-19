@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { SESSIONS, type Session } from "@/data/catalog";
+import { SESSIONS, frameFor, type Session } from "@/data/catalog";
 import { offLabel, useHouse } from "@/lib/house";
 import { cn } from "@/lib/cn";
 
@@ -120,7 +120,14 @@ function SessionCard({ session, onEnquire }: { session: Session; onEnquire: () =
   return (
     <article className="snap-card overflow-hidden rounded-lg border border-line bg-panel">
       <div className="relative aspect-3/2">
-        <img src={session.image} alt="" className="h-full w-full object-cover" width={1280} height={853} />
+        <img
+          src={session.image}
+          alt=""
+          className="h-full w-full object-cover"
+          style={{ objectPosition: frameFor(session.image) }}
+          width={1280}
+          height={853}
+        />
         <span className="absolute top-3 left-3 rounded-sm bg-wine px-2 py-1 text-xs font-medium text-ivory tabular-nums">
           {offLabel(session.original, session.price)}
         </span>

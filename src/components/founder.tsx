@@ -1,3 +1,5 @@
+import { frameFor } from "@/data/catalog";
+
 export function Founder() {
   return (
     <section id="founder" className="scroll-mt-36 border-t border-line py-16 sm:py-20">
@@ -10,6 +12,7 @@ export function Founder() {
             height={1280}
             loading="lazy"
             className="aspect-square w-full object-cover"
+            style={{ objectPosition: frameFor("/experiences/signet.jpg") }}
           />
         </div>
         <div>
